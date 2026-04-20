@@ -112,57 +112,90 @@ export default function CustomersPage() {
     },
   ]);
 
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
- 
+  // ===== FORM STATES =====
   const [name, setName] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [contactValue, setContactValue] = useState("");
 
- 
-  const addCustomer = () => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // ===== CREATE OR UPDATE CUSTOMER =====
+  const handleSave = () => {
     if (!name.trim()) return;
 
-    const newCustomer: Customer = {
-      id: Date.now().toString(),
-      name,
+    if (editingId) {
+      // ✏️ UPDATE
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === editingId
+            ? {
+                ...c,
+                name,
+              }
+            : c
+        )
+      );
 
-      addresses: [
-        {
-          id: "addr-" + Date.now(),
-          type: "home",
-          street,
-          city,
-          isDefault: true,
-        },
-      ],
+      setEditingId(null);
+    } else {
+      // ➕ CREATE
+      const newCustomer: Customer = {
+        id: Date.now().toString(),
+        name,
+        addresses: [
+          {
+            id: "addr-" + Date.now(),
+            type: "home",
+            street,
+            city,
+            isDefault: true,
+          },
+        ],
+        contacts: [
+          {
+            id: "contact-" + Date.now(),
+            type: "mobile",
+            value: contactValue,
+            isPrimary: true,
+          },
+        ],
+      };
 
-      contacts: [
-        {
-          id: "contact-" + Date.now(),
-          type: "mobile",
-          value: contactValue,
-          isPrimary: true,
-        },
-      ],
-    };
+      setCustomers([...customers, newCustomer]);
+    }
 
-    setCustomers([...customers, newCustomer]);
-
-    // clear form
     setName("");
     setStreet("");
     setCity("");
     setContactValue("");
   };
 
+  // ===== EDIT CUSTOMER =====
+  const handleEdit = (customer: Customer) => {
+    setName(customer.name);
+    setEditingId(customer.id);
+  };
+
+  // ===== DELETE CUSTOMER =====
+  const handleDelete = (id: string) => {
+    setCustomers(customers.filter((c) => c.id !== id));
+
+    if (selectedCustomer?.id === id) {
+      setSelectedCustomer(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
 
-      {}
+      {/* ===== FORM ===== */}
       <div className="bg-white p-4 rounded-2xl shadow space-y-3">
-        <h2 className="text-lg font-semibold">Add Customer</h2>
+        <h2 className="text-lg font-semibold">
+          {editingId ? "Edit Customer" : "Add Customer"}
+        </h2>
 
         <input
           placeholder="Customer Name"
@@ -171,39 +204,77 @@ export default function CustomersPage() {
           className="border p-2 w-full rounded"
         />
 
-        <input
-          placeholder="Street"
-          value={street}
-          onChange={(e) => setStreet(e.target.value)}
-          className="border p-2 w-full rounded"
-        />
+        {!editingId && (
+          <>
+            <input
+              placeholder="Street"
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+              className="border p-2 w-full rounded"
+            />
 
-        <input
-          placeholder="City"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          className="border p-2 w-full rounded"
-        />
+            <input
+              placeholder="City"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="border p-2 w-full rounded"
+            />
 
-        <input
-          placeholder="Contact Number"
-          value={contactValue}
-          onChange={(e) => setContactValue(e.target.value)}
-          className="border p-2 w-full rounded"
-        />
+            <input
+              placeholder="Contact Number"
+              value={contactValue}
+              onChange={(e) => setContactValue(e.target.value)}
+              className="border p-2 w-full rounded"
+            />
+          </>
+        )}
 
         <button
-          onClick={addCustomer}
+          onClick={handleSave}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
-          Add Customer
+          {editingId ? "Update Customer" : "Add Customer"}
         </button>
       </div>
 
-      {}
+      {/* ===== MAIN LAYOUT ===== */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <CustomerList customers={customers} onSelect={setSelectedCustomer} />
+        {/* LEFT: LIST + ACTIONS */}
+        <div className="bg-white p-4 rounded-2xl shadow space-y-2">
+          <h2 className="font-semibold mb-2">Customers</h2>
 
+          {customers.map((c) => (
+            <div
+              key={c.id}
+              className="p-2 border rounded flex justify-between items-center"
+            >
+              <span
+                onClick={() => setSelectedCustomer(c)}
+                className="cursor-pointer"
+              >
+                {c.name}
+              </span>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(c)}
+                  className="text-blue-500 text-sm"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  className="text-red-500 text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* RIGHT: DETAILS */}
         <div className="md:col-span-2">
           {selectedCustomer ? (
             <CustomerDetails customer={selectedCustomer} />
