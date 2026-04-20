@@ -115,46 +115,89 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
  
-  const [newName, setNewName] = useState("");
+  const [name, setName] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [contactValue, setContactValue] = useState("");
 
  
   const addCustomer = () => {
-    if (!newName.trim()) return;
+    if (!name.trim()) return;
 
     const newCustomer: Customer = {
       id: Date.now().toString(),
-      name: newName,
-      addresses: [],
-      contacts: [],
+      name,
+
+      addresses: [
+        {
+          id: "addr-" + Date.now(),
+          type: "home",
+          street,
+          city,
+          isDefault: true,
+        },
+      ],
+
+      contacts: [
+        {
+          id: "contact-" + Date.now(),
+          type: "mobile",
+          value: contactValue,
+          isPrimary: true,
+        },
+      ],
     };
 
     setCustomers([...customers, newCustomer]);
-    setNewName("");
+
+    // clear form
+    setName("");
+    setStreet("");
+    setCity("");
+    setContactValue("");
   };
 
   return (
     <div className="space-y-6">
 
       {}
-      <div className="bg-white p-4 rounded-2xl shadow">
-        <h2 className="text-lg font-semibold mb-3">Add Customer</h2>
+      <div className="bg-white p-4 rounded-2xl shadow space-y-3">
+        <h2 className="text-lg font-semibold">Add Customer</h2>
 
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Enter customer name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="border p-2 rounded w-full"
-          />
+        <input
+          placeholder="Customer Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
 
-          <button
-            onClick={addCustomer}
-            className="bg-blue-500 text-white px-4 rounded hover:bg-blue-600"
-          >
-            Add
-          </button>
-        </div>
+        <input
+          placeholder="Street"
+          value={street}
+          onChange={(e) => setStreet(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+
+        <input
+          placeholder="City"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+
+        <input
+          placeholder="Contact Number"
+          value={contactValue}
+          onChange={(e) => setContactValue(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+
+        <button
+          onClick={addCustomer}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Add Customer
+        </button>
       </div>
 
       {}
